@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddPlayerShipDto } from './dtos';
-import { Ship, ShipType } from '@prisma/client';
+import { Player, Ship, ShipType } from '@prisma/client';
 
 @Injectable()
 export class ShipService {
@@ -71,17 +71,16 @@ export class ShipService {
         let shipPlaced = false;
 
         while (!shipPlaced) {
-          const orientation = this.getRandomOrientation(); // horizontal or vertical
+          const orientation = this.getRandomOrientation();
           const startPosition = this.getRandomPosition();
 
           const shipPositions = this.generateShipPositionsWithoutOverlap(
             startPosition,
             orientation,
             ship.size,
-            placedPositions, // Pass existing positions
+            placedPositions,
           );
 
-          // If valid positions are generated (i.e., they all fit on the grid)
           if (shipPositions) {
             await this.prisma.ship.create({
               data: {
@@ -99,7 +98,6 @@ export class ShipService {
               },
             });
 
-            // Add the valid positions to the set of placed positions
             shipPositions.forEach((position) => placedPositions.add(position));
             shipPlaced = true;
           }
@@ -140,29 +138,53 @@ export class ShipService {
       let newPosition: string;
 
       if (orientation === 'horizontal') {
-        // Check if the ship fits on the grid horizontally
         if (start.number + size - 1 <= this.gridSize) {
           newPosition = `${start.letter}${start.number + i}`;
         } else {
-          return null; // If ship doesn't fit, return null to retry
+          return null;
         }
       } else {
-        // Check if the ship fits on the grid vertically
         if (letterIndex + size - 1 < this.gridLetters.length) {
           newPosition = `${this.gridLetters[letterIndex + i]}${start.number}`;
         } else {
-          return null; // If ship doesn't fit, return null to retry
+          return null;
         }
       }
 
-      // Check if the position is already occupied
       if (placedPositions.has(newPosition)) {
-        return null; // If the position is taken, return null to retry
+        return null;
       }
 
       positions.push(newPosition);
     }
 
     return positions;
+  }
+
+  async checkAllShipsAvailable(
+    gameId: string,
+    player: Player,
+  ): Promise<boolean> {
+    const playerShips = await this.prisma.ship.findMany({
+      where: {
+        game_id: gameId,
+        player: player,
+      },
+      select: {
+        type: true,
+      },
+    });
+
+    const typesToCheckArr = playerShips.map((ship) => ship.type);
+
+    const shipTypes = this.ships.map((ship) => ship.type);
+
+    if (shipTypes.length !== typesToCheckArr.length) {
+      return false;
+    }
+
+    return shipTypes.every((type) =>
+      typesToCheckArr.includes(type as ShipType),
+    );
   }
 }

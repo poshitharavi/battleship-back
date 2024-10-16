@@ -4,6 +4,9 @@ import {
   ConflictException,
   Controller,
   Logger,
+  NotAcceptableException,
+  Param,
+  Patch,
   Post,
   Res,
 } from '@nestjs/common';
@@ -38,7 +41,6 @@ export class GameController {
       this.logger.error(`Error at /game/save: ${error.message}`);
 
       if (error instanceof BadRequestException) {
-        // Handle BadRequestException differently
         return response.status(StatusCodes.BAD_REQUEST).json({
           message: error.message,
           error: getReasonPhrase(StatusCodes.BAD_REQUEST),
@@ -74,7 +76,6 @@ export class GameController {
       this.logger.error(`Error at /game/add-player-ship: ${error.message}`);
 
       if (error instanceof ConflictException) {
-        // Handle BadRequestException differently
         return response.status(StatusCodes.CONFLICT).json({
           message: error.message,
           error: getReasonPhrase(StatusCodes.CONFLICT),
@@ -83,7 +84,6 @@ export class GameController {
       }
 
       if (error instanceof BadRequestException) {
-        // Handle BadRequestException differently
         return response.status(StatusCodes.BAD_REQUEST).json({
           message: error.message,
           error: getReasonPhrase(StatusCodes.BAD_REQUEST),
@@ -114,7 +114,6 @@ export class GameController {
       this.logger.error(`Error at /game/add-computer-ships: ${error.message}`);
 
       if (error instanceof ConflictException) {
-        // Handle BadRequestException differently
         return response.status(StatusCodes.CONFLICT).json({
           message: error.message,
           error: getReasonPhrase(StatusCodes.CONFLICT),
@@ -123,11 +122,67 @@ export class GameController {
       }
 
       if (error instanceof BadRequestException) {
-        // Handle BadRequestException differently
         return response.status(StatusCodes.BAD_REQUEST).json({
           message: error.message,
           error: getReasonPhrase(StatusCodes.BAD_REQUEST),
           statusCode: StatusCodes.BAD_REQUEST,
+        });
+      }
+      return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something went wrong',
+        error: getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @Patch('start-game/:id')
+  async startTheGame(@Res() response: Response, @Param('id') id: string) {
+    try {
+      const isPlayerAllGood = await this.shipService.checkAllShipsAvailable(
+        id,
+        'human',
+      );
+
+      const isComputerAllGood = await this.shipService.checkAllShipsAvailable(
+        id,
+        'computer',
+      );
+
+      if (!isPlayerAllGood)
+        throw new NotAcceptableException(
+          'Player has to add all the available ships',
+        );
+
+      if (!isComputerAllGood)
+        throw new NotAcceptableException(
+          'Computer has to add all the available ships',
+        );
+
+      const gameStatus = await this.gamesService.getGamesStatus(id);
+
+      if (gameStatus !== 'initialized')
+        throw new NotAcceptableException(
+          'Game is already started or completed',
+        );
+
+      const game = await this.gamesService.updateGameStatus(id, 'in_progress');
+
+      return response.status(StatusCodes.OK).json({
+        statusCode: StatusCodes.OK,
+        message: 'Lets start the game.',
+        body: {
+          game,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Error at /game/start-game/${id}: ${error.message}`);
+
+      if (error instanceof NotAcceptableException) {
+        return response.status(StatusCodes.NOT_ACCEPTABLE).json({
+          message: error.message,
+          error: getReasonPhrase(StatusCodes.NOT_ACCEPTABLE),
+          statusCode: StatusCodes.NOT_ACCEPTABLE,
         });
       }
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
