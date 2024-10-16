@@ -51,6 +51,7 @@ model ShipPosition {
 }
 
 enum GameStatus {
+  initialized
   in_progress
   completed
 }

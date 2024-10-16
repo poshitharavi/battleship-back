@@ -10,7 +10,7 @@ export class GameService {
     try {
       const game = await this.prisma.game.create({
         data: {
-          status: 'in_progress',
+          status: 'initialized',
         },
       });
 
