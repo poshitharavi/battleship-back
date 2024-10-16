@@ -13,34 +13,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Game {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  gridSize    Int   
-  shots       Shot[]
-  ships       Ship[]
-  isOver      Boolean  @default(false) 
+  id             String     @id @default(uuid())
+  player_board   Json
+  computer_board Json
+  status         GameStatus
+  created_at     DateTime   @default(now())
 }
 
-model Ship {
-  id        Int      @id @default(autoincrement())
-  gameId    Int
-  game      Game     @relation(fields: [gameId], references: [id])
-  type      ShipType
-  positions Json     
-  isSunk    Boolean  @default(false)
-}
-
-model Shot {
-  id        Int      @id @default(autoincrement())
-  gameId    Int
-  game      Game     @relation(fields: [gameId], references: [id])
-  position  String   
-  isHit     Boolean  @default(false)
-}
-
-enum ShipType {
-  BATTLESHIP
-  DESTROYER
+enum GameStatus {
+  in_progress
+  completed
 }
