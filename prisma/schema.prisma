@@ -30,6 +30,7 @@ model Ship {
   type         ShipType
   player       Player
   created_at   DateTime       @default(now())
+  isDestroyed  Boolean        @default(false)
   ShipPosition ShipPosition[]
 
   @@unique([game_id, type, player])

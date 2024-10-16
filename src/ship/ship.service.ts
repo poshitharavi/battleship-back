@@ -187,4 +187,81 @@ export class ShipService {
       typesToCheckArr.includes(type as ShipType),
     );
   }
+
+  async checkShootPosition(
+    gameId: string,
+    position: string,
+    player: Player,
+  ): Promise<any> {
+    try {
+      const shipPosition = await this.prisma.shipPosition.findFirst({
+        where: {
+          game_id: gameId,
+          position: position,
+          ship: {
+            player: player,
+          },
+        },
+      });
+
+      if (!shipPosition) return false;
+
+      if (shipPosition.isShot)
+        throw new BadRequestException('This position is already been shot');
+
+      await this.prisma.shipPosition.update({
+        where: {
+          id: shipPosition.id,
+        },
+        data: {
+          isShot: true,
+        },
+      });
+
+      const allPositions = await this.prisma.shipPosition.findMany({
+        where: {
+          ship_id: shipPosition.ship_id,
+        },
+      });
+
+      const isAllThePositionsBeenDestroyed = allPositions.every(
+        (shot) => shot.isShot === true,
+      );
+
+      if (isAllThePositionsBeenDestroyed) {
+        await this.prisma.ship.update({
+          where: {
+            id: shipPosition.ship_id,
+          },
+          data: {
+            isDestroyed: true,
+          },
+        });
+      }
+
+      return {
+        isSuccessfulHit: true,
+        isShipDestroyed: isAllThePositionsBeenDestroyed,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkAllShipsBeenDestroyedByPlayer(
+    gameId: string,
+    player: Player,
+  ): Promise<boolean> {
+    const destroyedShips = await this.prisma.ship.findMany({
+      where: {
+        game_id: gameId,
+        player: player,
+        isDestroyed: true,
+      },
+    });
+
+    if (destroyedShips.length === this.ships.length) return true;
+
+    return false;
+  }
 }

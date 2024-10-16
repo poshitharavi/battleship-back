@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { AddComputerShipDto, AddPlayerShipDto } from 'src/ship/dtos';
 import { ShipService } from 'src/ship/ship.service';
+import { ShootDto } from './dtos';
 
 @Controller('game')
 export class GameController {
@@ -183,6 +184,71 @@ export class GameController {
           message: error.message,
           error: getReasonPhrase(StatusCodes.NOT_ACCEPTABLE),
           statusCode: StatusCodes.NOT_ACCEPTABLE,
+        });
+      }
+      return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something went wrong',
+        error: getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @Patch('shoot/:id')
+  async shootToPosition(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() shootDto: ShootDto,
+  ): Promise<any> {
+    try {
+      const gameStatus = await this.gamesService.getGamesStatus(id);
+
+      if (gameStatus !== 'in_progress')
+        throw new BadRequestException(
+          'Game is already completed or yet to be start',
+        );
+
+      const messages = [
+        'Thats a hit!, Great Job',
+        'You missed the shot',
+        'You destroyed enemy fleet, Congratulations! You are the winner',
+      ];
+
+      const checkShootPosition = await this.shipService.checkShootPosition(
+        id,
+        shootDto.position,
+        'computer',
+      );
+
+      const allShipsBeenDestroyedByHuman =
+        await this.shipService.checkAllShipsBeenDestroyedByPlayer(
+          id,
+          'computer',
+        );
+
+      const allShipsBeenDestroyedByComputer = false;
+
+      return response.status(StatusCodes.OK).json({
+        statusCode: StatusCodes.OK,
+        message: allShipsBeenDestroyedByHuman
+          ? messages[2]
+          : checkShootPosition.isSuccessfulHit
+            ? messages[0]
+            : messages[1],
+        body: {
+          ...checkShootPosition,
+          allShipsBeenDestroyedByHuman,
+          allShipsBeenDestroyedByComputer,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Error at /game/shoot/${id}: ${error.message}`);
+
+      if (error instanceof BadRequestException) {
+        return response.status(StatusCodes.BAD_REQUEST).json({
+          message: error.message,
+          error: getReasonPhrase(StatusCodes.BAD_REQUEST),
+          statusCode: StatusCodes.BAD_REQUEST,
         });
       }
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
