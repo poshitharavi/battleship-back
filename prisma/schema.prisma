@@ -14,14 +14,54 @@ datasource db {
 }
 
 model Game {
-  id             String     @id @default(uuid())
-  player_board   Json
-  computer_board Json
-  status         GameStatus
-  created_at     DateTime   @default(now())
+  id           String         @id @default(uuid())
+  status       GameStatus
+  created_at   DateTime       @default(now())
+  Ship         Ship[]
+  ShipPosition ShipPosition[]
+
+  @@map("games")
+}
+
+model Ship {
+  id           Int            @id @default(autoincrement())
+  game_id      String
+  game         Game           @relation(fields: [game_id], references: [id])
+  type         ShipType
+  player       Player
+  created_at   DateTime       @default(now())
+  ShipPosition ShipPosition[]
+
+  @@unique([game_id, type, player])
+  @@map("ships")
+}
+
+model ShipPosition {
+  id         Int      @id @default(autoincrement())
+  game_id    String
+  game       Game     @relation(fields: [game_id], references: [id])
+  position   String
+  ship_id    Int
+  ship       Ship     @relation(fields: [ship_id], references: [id])
+  isShot     Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@unique([game_id, position])
+  @@map("ship_posiations")
 }
 
 enum GameStatus {
   in_progress
   completed
+}
+
+enum ShipType {
+  Battleship
+  Destroyer1
+  Destroyer2
+}
+
+enum Player {
+  computer
+  human
 }
