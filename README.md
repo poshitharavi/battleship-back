@@ -1,6 +1,6 @@
 # Battleship Game Backend
 
-This is the backend for a Battleship game built with **NestJS** and **Prisma ORM**, connected to a **PostgreSQL** database. The backend handles game logic, including ship placement, shooting actions, and game state management for both players and computer opponents.
+This is the backend for a Battleship game built with **NestJS** and **Prisma ORM**, connected to a **PostgreSQL** database. The backend handles game logic, including ship placement, shooting actions, and game state management for one human player and computer opponent.
 
 ## Table of Contents
 
