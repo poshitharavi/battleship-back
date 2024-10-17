@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "42171015-f001-4f4b-b28f-bb8509c783c3",
+		"name": "API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "35368452"
+	},
+	"item": [
+		{
+			"name": "Game",
+			"item": [
+				{
+					"name": "New Game",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}game/create"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ship For Player",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gameId\": \"114dae60-e52d-4e7b-8389-986b9d22a0b5\",\n    \"ship\": \"Battleship\",\n    \"positions\": [\n        \"C1\",\n        \"C2\",\n        \"C3\",\n        \"C4\",\n        \"C4\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}game/add-player-ship"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ship For Computer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gameId\": \"114dae60-e52d-4e7b-8389-986b9d22a0b5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}game/add-computer-ships"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Game",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}game/start-game/070a7260-e5a5-4f70-8784-0f83bbd181b0"
+					},
+					"response": []
+				},
+				{
+					"name": "Shoot",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"position\": \"G9\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}game/shoot/350b5cdd-c571-49d3-b927-2e1bfe893900"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hello World",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "{{base_url}}"
+			},
+			"response": []
+		}
+	]
+}
