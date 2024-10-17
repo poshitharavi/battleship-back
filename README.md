@@ -1,73 +1,114 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Battleship Game Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is the backend for a Battleship game built with **NestJS** and **Prisma ORM**, connected to a **PostgreSQL** database. The backend handles game logic, including ship placement, shooting actions, and game state management for both players and computer opponents.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Contributing](#contributing)
+- [License](#license)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
+
+- Place ships for both human players and computers.
+- Handle shooting actions on a grid.
+- Manage game state transitions (start, in-progress, completed).
+- Use Prisma ORM to interact with PostgreSQL for game data persistence.
+
+## Tech Stack
+
+- **NestJS**: Node.js framework for building efficient and scalable server-side applications.
+- **Express.js**: Fast, unopinionated web framework for Node.js (NestJS runs on top of it).
+- **Prisma ORM**: Database ORM for TypeScript and Node.js that simplifies database operations.
+- **PostgreSQL**: Relational database system used for storing game data.
+
+## Project Structure
+
+\`\`\`bash
+src/
+├── game/ # Contains game-related logic
+│ ├── dtos/ # Data Transfer Objects for game-related endpoints
+│ ├── game.controller.ts # Game Controller (routes for game-related endpoints)
+│ ├── game.service.ts # Game Service (business logic)
+│ └── game.module.ts # Game Module
+├── ship/ # Handles ship management (placing ships, checking positions)
+│ ├── dtos/ # Data Transfer Objects for ship-related endpoints
+│ ├── ship.controller.ts # Ship Controller (routes for ship-related actions)
+│ ├── ship.service.ts # Ship Service (business logic for ships)
+│ └── ship.module.ts # Ship Module
+├── prisma/ # Prisma integration for database interactions
+│ ├── prisma.module.ts # Prisma Module
+│ └── prisma.service.ts # Prisma Service (manages connection to the database)
+├── app.module.ts # Root application module
+├── app.controller.ts # Main application controller
+├── main.ts # Entry point of the application
+└── app.service.ts # Application-level services
+\`\`\`
 
 ## Installation
 
-```bash
-$ yarn install
-```
+1. Clone the repository:
+   \`\`\`bash
+   git clone <your-repository-url>
+   cd battleship-backend
+   \`\`\`
 
-## Running the app
+2. Install dependencies:
+   \`\`\`bash
+   yarn install
+   \`\`\`
 
-```bash
-# development
-$ yarn run start
+3. Generate Prisma client:
+   \`\`\`bash
+   npx prisma generate
+   \`\`\`
 
-# watch mode
-$ yarn run start:dev
+4. Run Prisma migrations:
+   \`\`\`bash
+   npx prisma migrate dev
+   \`\`\`
 
-# production mode
-$ yarn run start:prod
-```
+## Environment Variables
 
-## Test
+Create a `.env` file at the root of the project and configure the following variables:
 
-```bash
-# unit tests
-$ yarn run test
+\`\`\`
+DATABASE_URL=postgresql://<username>:<password>@localhost:5432/<database>
+PORT=3000
+\`\`\`
 
-# e2e tests
-$ yarn run test:e2e
+## Running the Application
 
-# test coverage
-$ yarn run test:cov
-```
+1. Start the server in development mode:
+   \`\`\`bash
+   yarn start:dev
+   \`\`\`
 
-## Support
+2. The server will run on \`http://localhost:3000\`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## API Endpoints
 
-## Stay in touch
+### Game Endpoints:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **`POST /game/add-ships`**: Add ships to the player's grid.
+- **`PATCH /game/shoot/:id`**: Shoot at a specific position on the grid.
+- **`GET /game/status/:id`**: Get the current game status.
+
+### Ship Endpoints:
+
+- **`POST /ship/add-player-ships`**: Add ships for a human player.
+- **`POST /ship/add-computer-ships`**: Add ships for the computer.
+
+## Contributing
+
+Feel free to fork this repository and submit pull requests.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License.
