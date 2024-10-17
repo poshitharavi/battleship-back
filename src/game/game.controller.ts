@@ -22,14 +22,14 @@ export class GameController {
   private readonly logger = new Logger(GameController.name);
 
   constructor(
-    private readonly gamesService: GameService,
+    private readonly gameService: GameService,
     private shipService: ShipService,
   ) {}
 
   @Post('create')
   async saveTask(@Res() response: Response): Promise<any> {
     try {
-      const game = await this.gamesService.createGame();
+      const game = await this.gameService.createGame();
 
       return response.status(StatusCodes.OK).json({
         statusCode: StatusCodes.OK,
@@ -160,14 +160,14 @@ export class GameController {
           'Computer has to add all the available ships',
         );
 
-      const gameStatus = await this.gamesService.getGamesStatus(id);
+      const gameStatus = await this.gameService.getGamesStatus(id);
 
       if (gameStatus !== 'initialized')
         throw new NotAcceptableException(
           'Game is already started or completed',
         );
 
-      const game = await this.gamesService.updateGameStatus(id, 'in_progress');
+      const game = await this.gameService.updateGameStatus(id, 'in_progress');
 
       return response.status(StatusCodes.OK).json({
         statusCode: StatusCodes.OK,
@@ -201,20 +201,15 @@ export class GameController {
     @Body() shootDto: ShootDto,
   ): Promise<any> {
     try {
-      const gameStatus = await this.gamesService.getGamesStatus(id);
+      const gameStatus = await this.gameService.getGamesStatus(id);
 
-      if (gameStatus !== 'in_progress')
+      if (gameStatus !== 'in_progress') {
         throw new BadRequestException(
-          'Game is already completed or yet to be start',
+          'Game is already completed or yet to be started',
         );
+      }
 
-      const messages = [
-        'Thats a hit!, Great Job',
-        'You missed the shot',
-        'You destroyed enemy fleet, Congratulations! You are the winner',
-      ];
-
-      const checkShootPosition = await this.shipService.checkShootPosition(
+      const checkHumanShootPosition = await this.shipService.checkShootPosition(
         id,
         shootDto.position,
         'computer',
@@ -226,19 +221,39 @@ export class GameController {
           'computer',
         );
 
-      const allShipsBeenDestroyedByComputer = false;
+      let allShipsBeenDestroyedByComputer = false;
+      let computerAttack = {};
+
+      if (!allShipsBeenDestroyedByHuman) {
+        const shotsByComputer =
+          await this.shipService.automaticShotByComputer(id);
+        allShipsBeenDestroyedByComputer =
+          shotsByComputer.allShipsBeenDestroyedByComputer;
+
+        computerAttack = {
+          position: shotsByComputer.newPosition,
+          ...shotsByComputer.checkComputerShootPosition,
+        };
+      }
+
+      if (allShipsBeenDestroyedByComputer || allShipsBeenDestroyedByHuman) {
+        await this.gameService.updateGameStatus(id, 'completed');
+      }
+
+      const message = this.gameService.getShootMessage(
+        checkHumanShootPosition.isSuccessfulHit,
+        allShipsBeenDestroyedByHuman,
+        allShipsBeenDestroyedByComputer,
+      );
 
       return response.status(StatusCodes.OK).json({
         statusCode: StatusCodes.OK,
-        message: allShipsBeenDestroyedByHuman
-          ? messages[2]
-          : checkShootPosition.isSuccessfulHit
-            ? messages[0]
-            : messages[1],
+        message: message,
         body: {
-          ...checkShootPosition,
+          ...checkHumanShootPosition,
           allShipsBeenDestroyedByHuman,
           allShipsBeenDestroyedByComputer,
+          computerAttack,
         },
       });
     } catch (error) {

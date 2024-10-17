@@ -38,17 +38,18 @@ model Ship {
 }
 
 model ShipPosition {
-  id         Int      @id @default(autoincrement())
-  game_id    String
-  game       Game     @relation(fields: [game_id], references: [id])
-  position   String
-  ship_id    Int
-  ship       Ship     @relation(fields: [ship_id], references: [id])
-  isShot     Boolean  @default(false)
-  created_at DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  game_id     String
+  game        Game     @relation(fields: [game_id], references: [id])
+  position    String
+  player_type Player
+  ship_id     Int
+  ship        Ship     @relation(fields: [ship_id], references: [id])
+  isShot      Boolean  @default(false)
+  created_at  DateTime @default(now())
 
-  @@unique([game_id, position])
-  @@map("ship_posiations")
+  @@unique([game_id, position, player_type])
+  @@map("ship_positions")
 }
 
 enum GameStatus {

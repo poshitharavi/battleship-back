@@ -34,9 +34,10 @@ export class ShipService {
         throw new BadRequestException(
           'Ship positions are not equal to the size',
         );
-      const shipPositions = addPlayerShipDto.positions.map((position) => ({
+      const shipPositions: any = addPlayerShipDto.positions.map((position) => ({
         position: position,
         game_id: addPlayerShipDto.gameId,
+        player_type: 'human',
       }));
 
       const playerShip = await this.prisma.ship.create({
@@ -92,6 +93,7 @@ export class ShipService {
                     data: shipPositions.map((position) => ({
                       position,
                       game_id: gameId,
+                      player_type: 'computer',
                     })),
                   },
                 },
@@ -191,7 +193,7 @@ export class ShipService {
   async checkShootPosition(
     gameId: string,
     position: string,
-    player: Player,
+    attackingTo: Player,
   ): Promise<any> {
     try {
       const shipPosition = await this.prisma.shipPosition.findFirst({
@@ -199,7 +201,7 @@ export class ShipService {
           game_id: gameId,
           position: position,
           ship: {
-            player: player,
+            player: attackingTo,
           },
         },
       });
@@ -250,12 +252,12 @@ export class ShipService {
 
   async checkAllShipsBeenDestroyedByPlayer(
     gameId: string,
-    player: Player,
+    attackingTo: Player,
   ): Promise<boolean> {
     const destroyedShips = await this.prisma.ship.findMany({
       where: {
         game_id: gameId,
-        player: player,
+        player: attackingTo,
         isDestroyed: true,
       },
     });
@@ -263,5 +265,29 @@ export class ShipService {
     if (destroyedShips.length === this.ships.length) return true;
 
     return false;
+  }
+
+  async automaticShotByComputer(gameId: string): Promise<any> {
+    try {
+      const newPositionObj = this.getRandomPosition();
+      const newPosition = `${newPositionObj.letter}${newPositionObj.number}`;
+
+      const checkComputerShootPosition = await this.checkShootPosition(
+        gameId,
+        newPosition,
+        'human',
+      );
+
+      const allShipsBeenDestroyedByComputer =
+        await this.checkAllShipsBeenDestroyedByPlayer(gameId, 'human');
+
+      return {
+        checkComputerShootPosition,
+        allShipsBeenDestroyedByComputer,
+        newPosition,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
