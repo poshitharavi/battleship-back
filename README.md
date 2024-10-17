@@ -30,7 +30,6 @@ This is the backend for a Battleship game built with **NestJS** and **Prisma ORM
 
 ## Project Structure
 
-\`\`\`bash
 src/
 ├── game/ # Contains game-related logic
 │ ├── dtos/ # Data Transfer Objects for game-related endpoints
@@ -49,46 +48,38 @@ src/
 ├── app.controller.ts # Main application controller
 ├── main.ts # Entry point of the application
 └── app.service.ts # Application-level services
-\`\`\`
 
 ## Installation
 
 1. Clone the repository:
-   \`\`\`bash
+
    git clone <your-repository-url>
    cd battleship-backend
-   \`\`\`
 
 2. Install dependencies:
-   \`\`\`bash
+
    yarn install
-   \`\`\`
 
 3. Generate Prisma client:
-   \`\`\`bash
+
    npx prisma generate
-   \`\`\`
 
 4. Run Prisma migrations:
-   \`\`\`bash
+
    npx prisma migrate dev
-   \`\`\`
 
 ## Environment Variables
 
 Create a `.env` file at the root of the project and configure the following variables:
 
-\`\`\`
 DATABASE_URL=postgresql://<username>:<password>@localhost:5432/<database>
 PORT=3000
-\`\`\`
 
 ## Running the Application
 
 1. Start the server in development mode:
-   \`\`\`bash
+
    yarn start:dev
-   \`\`\`
 
 2. The server will run on \`http://localhost:3000\`.
 
